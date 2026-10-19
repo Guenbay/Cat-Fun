@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="midnight">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Purrdex — sammle Katzenfakten, steige im Level auf, halte deine Streak und schalte Achievements frei.">
+<meta name="theme-color" content="#0a0a14">
+<title>Purrdex · Cat Fact Collector</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ───────────────── Hintergrund-Ebenen ───────────────── -->
+<div class="aurora" aria-hidden="true">
+  <span class="blob blob--1"></span>
+  <span class="blob blob--2"></span>
+  <span class="blob blob--3"></span>
+</div>
+<canvas id="paw-canvas" class="paw-canvas" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ───────────────── Kopfzeile ───────────────── -->
+<header class="topbar">
+  <a class="brand" href="#" aria-label="Purrdex Startseite">
+    <span class="brand__mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" role="presentation">
+        <path d="M10 18 14 6l9 7h2l9-7 4 12v12c0 8-6 14-14 14s-14-6-14-14Z" fill="currentColor"/>
+        <circle cx="18" cy="26" r="2.6" fill="#0a0a14"/>
+        <circle cx="30" cy="26" r="2.6" fill="#0a0a14"/>
+        <path d="M24 31l-3 3h6Z" fill="#0a0a14"/>
+      </svg>
+    </span>
+    <span class="brand__text">
+      <strong>Purrdex</strong>
+      <small>Cat Fact Collector</small>
+    </span>
+  </a>
+
+  <div class="topbar__stats">
+    <div class="chip chip--streak" id="chip-streak" title="Tage in Folge gespielt">
+      <span class="chip__icon">🔥</span>
+      <span class="chip__value" data-bind="streak">0</span>
+      <span class="chip__label">Streak</span>
+    </div>
+    <div class="chip chip--coins" id="chip-coins" title="Gesammelte Fischli">
+      <span class="chip__icon">🐟</span>
+      <span class="chip__value" data-bind="coins">0</span>
+      <span class="chip__label">Fischli</span>
+    </div>
+    <button class="icon-btn" id="btn-sound" type="button" aria-pressed="true" title="Sound an/aus">
+      <span data-bind="soundIcon">🔊</span>
+    </button>
+    <button class="icon-btn" id="btn-theme" type="button" title="Design wechseln">
+      <span data-bind="themeIcon">🌙</span>
+    </button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ───────────────── Spieler-Panel ───────────────── -->
+  <section class="panel panel--player" aria-labelledby="player-title">
+    <h2 class="sr-only" id="player-title">Dein Fortschritt</h2>
+
+    <div class="level">
+      <div class="level__ring">
+        <svg viewBox="0 0 120 120" role="img" aria-labelledby="ring-label">
+          <title id="ring-label">Fortschritt zum nächsten Level</title>
+          <circle class="ring__track" cx="60" cy="60" r="52"/>
+          <circle class="ring__fill" cx="60" cy="60" r="52" id="ring-fill"/>
+        </svg>
+        <div class="level__core">
+          <span class="level__num" data-bind="level">1</span>
+          <span class="level__cap">Level</span>
+        </div>
+      </div>
+      <div class="level__meta">
+        <p class="level__rank" data-bind="rank">Streunerkätzchen</p>
+        <p class="level__xp"><span data-bind="xpInto">0</span> / <span data-bind="xpNeed">100</span> XP</p>
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="xp-bar-wrap">
+          <span class="bar__fill" id="xp-bar"></span>
+        </div>
+      </div>
+    </div>
+
+    <dl class="kpis">
+      <div class="kpi"><dt>Fakten</dt><dd data-bind="collected">0</dd></div>
+      <div class="kpi"><dt>Combo</dt><dd><span data-bind="combo">0</span>×</dd></div>
+      <div class="kpi"><dt>Beste Combo</dt><dd data-bind="bestCombo">0</dd></div>
+      <div class="kpi"><dt>Legendär</dt><dd data-bind="legendary">0</dd></div>
+    </dl>
+  </section>
+
+  <!-- ───────────────── Fakten-Bühne ───────────────── -->
+  <section class="panel panel--stage" aria-labelledby="stage-title">
+    <div class="stage__head">
+      <h2 id="stage-title">Fakt des Moments</h2>
+      <span class="pill" id="rarity-pill" data-rarity="common">Common</span>
+    </div>
+
+    <article class="factcard" id="factcard" tabindex="-1">
+      <div class="factcard__glow" aria-hidden="true"></div>
+      <span class="factcard__quote" aria-hidden="true">“</span>
+      <p class="factcard__text" id="fact-text" aria-live="polite">
+        Drück auf <strong>Neuer Fakt</strong> und fang an zu sammeln.
+      </p>
+      <footer class="factcard__foot">
+        <span class="factcard__id" id="fact-id">#000</span>
+        <span class="factcard__xp" id="fact-xp"></span>
+      </footer>
+    </article>
+
+    <div class="stage__actions">
+      <button class="btn btn--primary" id="btn-fact" type="button">
+        <span class="btn__shine" aria-hidden="true"></span>
+        <span class="btn__icon">🐾</span>
+        <span class="btn__label">Neuer Fakt</span>
+        <kbd class="btn__kbd">Leertaste</kbd>
+      </button>
+      <button class="btn btn--ghost" id="btn-favorite" type="button" aria-pressed="false">
+        <span class="btn__icon">⭐</span><span class="btn__label">Favorit</span>
+      </button>
+      <button class="btn btn--ghost" id="btn-share" type="button">
+        <span class="btn__icon">📋</span><span class="btn__label">Kopieren</span>
+      </button>
+    </div>
+
+    <div class="combo" id="combo-meter" aria-hidden="true">
+      <span class="combo__fill" id="combo-fill"></span>
+      <span class="combo__text">Combo hält noch <b id="combo-secs">0</b>s</span>
+    </div>
+  </section>
+
+  <!-- ───────────────── Tagesaufgaben ───────────────── -->
+  <section class="panel panel--quests" aria-labelledby="quests-title">
+    <div class="panel__head">
+      <h2 id="quests-title">Tagesaufgaben</h2>
+      <span class="panel__hint" id="quest-reset">neu um Mitternacht</span>
+    </div>
+    <ul class="quests" id="quest-list"></ul>
+  </section>
+
+  <!-- ───────────────── Achievements ───────────────── -->
+  <section class="panel panel--achievements" aria-labelledby="ach-title">
+    <div class="panel__head">
+      <h2 id="ach-title">Achievements</h2>
+      <span class="panel__hint"><b data-bind="achDone">0</b> / <span data-bind="achTotal">0</span></span>
+    </div>
+    <ul class="badges" id="badge-list"></ul>
+  </section>
+
+  <!-- ───────────────── Sammlung ───────────────── -->
+  <section class="panel panel--collection" aria-labelledby="col-title">
+    <div class="panel__head">
+      <h2 id="col-title">Deine Sammlung</h2>
+      <div class="filters" role="group" aria-label="Sammlung filtern">
+        <button class="filter is-active" data-filter="all" type="button">Alle</button>
+        <button class="filter" data-filter="favorite" type="button">⭐ Favoriten</button>
+        <button class="filter" data-filter="legendary" type="button">Legendär</button>
+        <button class="filter" data-filter="epic" type="button">Episch</button>
+        <button class="filter" data-filter="rare" type="button">Selten</button>
+      </div>
+    </div>
+    <ul class="collection" id="collection-list"></ul>
+    <p class="empty" id="collection-empty">Noch nichts gesammelt. Jeder neue Fakt landet hier. 🐈‍⬛</p>
+    <div class="panel__foot">
+      <button class="btn btn--danger-ghost" id="btn-reset" type="button">Fortschritt zurücksetzen</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="sitefoot">
+  <p>Fakten von <a href="https://catfact.ninja" target="_blank" rel="noopener noreferrer">catfact.ninja</a> · offline mit eingebautem Fakten-Vorrat</p>
+  <p class="sitefoot__sig">Gebaut von Guenbay 🐾</p>
+</footer>
+
+<!-- Toasts & Level-Up Overlay -->
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div class="levelup" id="levelup" hidden>
+  <div class="levelup__card">
+    <span class="levelup__burst" aria-hidden="true">🎉</span>
+    <p class="levelup__kicker">Level Up</p>
+    <p class="levelup__num" id="levelup-num">2</p>
+    <p class="levelup__rank" id="levelup-rank"></p>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+/**
+ * Offline-Vorrat. Greift, wenn catfact.ninja nicht erreichbar ist —
+ * damit das Spiel auch ohne Netz spielbar bleibt.
+ */
+export const FALLBACK_FACTS = [
+  "Katzen schlafen rund 70 Prozent ihres Lebens, also etwa 13 bis 16 Stunden pro Tag.",
+  "Eine Gruppe von Katzen nennt man einen Clowder, eine Gruppe Kätzchen ein Kindle.",
+  "Katzen haben in jedem Ohr 32 Muskeln und können die Ohren um 180 Grad drehen.",
+  "Der Nasenabdruck einer Katze ist so einzigartig wie ein menschlicher Fingerabdruck.",
+  "Katzen können rund 100 verschiedene Laute erzeugen, Hunde nur etwa zehn.",
+  "Ausgewachsene Katzen miauen fast nur mit Menschen, untereinander kaum.",
+  "Eine Hauskatze kann kurzzeitig bis zu 48 km/h schnell laufen.",
+  "Katzen schmecken keine Süße — ihnen fehlt der passende Rezeptor.",
+  "Das Schnurren liegt meist zwischen 25 und 150 Hertz, ein Bereich, der die Heilung von Knochen fördern kann.",
+  "Katzen haben 230 Knochen, Menschen nur 206.",
+  "Die Schädelform von Katzen und Menschen ähnelt sich stärker als die von Katzen und Hunden.",
+  "Katzen laufen wie Kamele und Giraffen: erst beide rechten, dann beide linken Beine.",
+  "Eine Katze kann das Sechsfache ihrer Körperlänge weit springen.",
+  "Katzen sehen bei einem Sechstel des Lichts noch gut, das ein Mensch braucht.",
+  "Die Schnurrhaare einer Katze sind etwa so breit wie ihr Körper und dienen als Maßband.",
+  "Katzen schwitzen ausschließlich über ihre Pfotenballen.",
+  "Die älteste bekannte Hauskatze wurde 38 Jahre alt.",
+  "Katzen verbringen bis zu einem Drittel ihrer Wachzeit mit Fellpflege.",
+  "Das Katzenauge besitzt ein Tapetum lucidum, das Licht reflektiert — daher das Leuchten im Dunkeln.",
+  "Eine Katze hat etwa 24 Schnurrhaare, zwölf pro Seite, in vier Reihen.",
+  "Katzen reiben ihren Kopf an Menschen, um Duftmarken zu setzen.",
+  "Kätzchen öffnen ihre Augen erst sieben bis zehn Tage nach der Geburt.",
+  "Katzen können Ultraschall hören und nehmen Frequenzen bis 64 Kilohertz wahr.",
+  "Die Zunge einer Katze ist mit Papillen besetzt, winzigen Widerhaken aus Keratin.",
+  "Isaac Newton gilt als Erfinder der Katzenklappe.",
+  "Katzen landen dank ihres Stellreflexes fast immer auf den Pfoten.",
+  "Schwarze Katzen gelten in Japan und Großbritannien als Glücksbringer.",
+  "Eine Katze kann sich durch jede Öffnung zwängen, durch die ihr Kopf passt.",
+  "Im alten Ägypten rasierten Trauernde sich die Augenbrauen, wenn ihre Katze starb.",
+  "Katzen haben ein zusätzliches Geruchsorgan am Gaumen, das Jacobson-Organ.",
+  "Der Schwanz einer Katze enthält fast zehn Prozent aller ihrer Knochen.",
+  "Katzen können nicht nur vorwärts, sondern auch rückwärts gezielt klettern — tun es aber ungern.",
+];
