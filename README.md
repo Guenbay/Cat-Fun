@@ -23,13 +23,14 @@ Hervorgegangen aus dem Mini-Projekt [cat-funfact](https://github.com/Guenbay/cat
 | 🏆 Achievements | 17 Stück, von *Erster Pfotenabdruck* bis *Nachtschwärmer*. |
 | 🐟 Fischli | Weichwährung als Fortschrittsanzeige. |
 | 📚 Sammlung | Alle gezogenen Karten mit Filtern nach Seltenheit und Favoriten, jede mit Sprach-Abzeichen. |
-| 🇩🇪🇬🇧 Zwei Quellen | Umschalter in der Kopfzeile: deutscher Fakten-Pool (98 kuratierte Fakten, endlich und netzunabhängig) oder catfact.ninja (englisch, unbegrenzt). Beide füllen dieselbe Sammlung, der Fortschritt im deutschen Pool wird mitgezählt. |
+| 🌍 Drei Sprachen | Umschalter in der Kopfzeile zwischen **Deutsch**, **English** und **Türkçe**. Er übersetzt die komplette Oberfläche samt Rängen, Achievements und Tagesaufgaben — und wechselt zugleich die Faktenquelle. Alle Sprachen füllen dieselbe Sammlung, jede Karte trägt ihr Sprach-Abzeichen. |
 
 **Oberfläche**
 
 - Aurora-Hintergrund mit treibenden Pfoten auf Canvas und feiner Film-Körnung
 - Glassmorphism-Panels, Fortschrittsring, Partikel-Ausbrüche je nach Seltenheit
 - Zwei Themes: *Midnight* (dunkel) und *Daylight* (hell)
+- `<html lang>` folgt der gewählten Sprache
 - Synthetischer Sound über die WebAudio-API — keine einzige Audiodatei im Repo
 - Tastatur: `Leertaste` zieht, `F` setzt Favorit, `C` kopiert
 - Eigener Bestätigungs-Dialog statt `confirm()` — native Dialoge sind in
@@ -40,9 +41,12 @@ Hervorgegangen aus dem Mini-Projekt [cat-funfact](https://github.com/Guenbay/cat
 
 - Reines Vanilla JS mit ES-Modulen — kein Build, kein Framework, keine Abhängigkeit
 - Fortschritt im `localStorage`, jeder Zugriff gegen blockierte Site-Daten abgesichert
-- Zwei Faktenquellen: ein kuratierter deutscher Pool im Projekt (es gibt keine
-  deutschsprachige Katzenfakten-API) und [catfact.ninja](https://catfact.ninja)
-  für Englisch, mit Timeout und englischem Offline-Vorrat als Rückfallebene
+- Drei Faktenquellen: kuratierte Pools im Projekt für Deutsch (98 Fakten) und
+  Türkisch (98 Fakten) — für diese Sprachen gibt es keine Katzenfakten-API —
+  sowie [catfact.ninja](https://catfact.ninja) für Englisch, mit Timeout und
+  englischem Offline-Vorrat als Rückfallebene
+- Alle sichtbaren Texte liegen in `js/data/i18n.js`; kein Modul schreibt Text
+  selbst. Statische Texte sind im Markup mit `data-i18n` ausgezeichnet
 
 ---
 
@@ -87,14 +91,16 @@ js/
   game/
     achievements.js         Definitionen und Auswertung
     quests.js               Tagesaufgaben-Pool und Tagesauswahl
-    xp.js                   Levelkurve und Ränge
+    xp.js                   Levelkurve und Rangschwellen
   ui/
     effects.js              Pfoten-Canvas und Partikel
     render.js               DOM-Zeichnen, kennt keine Spiellogik
     toast.js                Meldungen
   data/
+    i18n.js                 Alle Oberflächentexte in DE / EN / TR
     facts-de.js             Kuratierter deutscher Pool (98 Fakten)
     facts-en.js             Englischer Offline-Vorrat
+    facts-tr.js             Kuratierter türkischer Pool (98 Fakten)
 ```
 
 Die Trennung ist bewusst: `core` weiß nichts über das Spiel, `game` nichts

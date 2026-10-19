@@ -1,17 +1,18 @@
 /**
  * Tagesaufgaben. Der Satz wird pro Kalendertag aus einem festen Pool
  * gezogen — gleicher Tag, gleiche Aufgaben, auch nach einem Reload.
+ * Die Aufgabennamen liegen übersetzt in i18n unter `quest.<id>`.
  */
 import { hashText } from "../core/rarity.js";
 
 const POOL = [
-  { id: "draw5",    name: "Zieh 5 Fakten",              goal: 5,  xp: 40,  coins: 15, track: "draws" },
-  { id: "draw12",   name: "Zieh 12 Fakten",             goal: 12, xp: 90,  coins: 35, track: "draws" },
-  { id: "rare2",    name: "Finde 2 seltene Fakten",     goal: 2,  xp: 70,  coins: 25, track: "rarePlus" },
-  { id: "epic1",    name: "Finde einen epischen Fakt",  goal: 1,  xp: 110, coins: 40, track: "epicPlus" },
-  { id: "combo6",   name: "Erreiche Combo 6",           goal: 6,  xp: 80,  coins: 30, track: "comboPeak" },
-  { id: "fav2",     name: "Markiere 2 Favoriten",       goal: 2,  xp: 50,  coins: 20, track: "favorites" },
-  { id: "new8",     name: "Entdecke 8 neue Karten",     goal: 8,  xp: 100, coins: 35, track: "newCards" },
+  { id: "draw5",    goal: 5,  xp: 40,  coins: 15, track: "draws" },
+  { id: "draw12",   goal: 12, xp: 90,  coins: 35, track: "draws" },
+  { id: "rare2",    goal: 2,  xp: 70,  coins: 25, track: "rarePlus" },
+  { id: "epic1",    goal: 1,  xp: 110, coins: 40, track: "epicPlus" },
+  { id: "combo6",   goal: 6,  xp: 80,  coins: 30, track: "comboPeak" },
+  { id: "fav2",     goal: 2,  xp: 50,  coins: 20, track: "favorites" },
+  { id: "new8",     goal: 8,  xp: 100, coins: 35, track: "newCards" },
 ];
 
 export function todayKey(date = new Date()) {

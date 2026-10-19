@@ -1,16 +1,7 @@
-/** Level-Kurve und Ränge. */
+/** Level-Kurve und Ränge. Die Rangnamen liegen übersetzt in i18n (`rank.0` …). */
 
-export const RANKS = [
-  { from: 1,  name: "Streunerkätzchen" },
-  { from: 3,  name: "Fensterbrett-Beobachter" },
-  { from: 5,  name: "Karton-Kapitän" },
-  { from: 8,  name: "Nachtjäger" },
-  { from: 12, name: "Sofa-Sheriff" },
-  { from: 16, name: "Schnurr-Virtuose" },
-  { from: 21, name: "Dachfirst-Legende" },
-  { from: 27, name: "Großmeister der Fakten" },
-  { from: 35, name: "Neunfach Beseelt" },
-];
+/** Ab welchem Level ein Rang gilt — Index entspricht dem i18n-Schlüssel. */
+export const RANK_THRESHOLDS = [1, 3, 5, 8, 12, 16, 21, 27, 35];
 
 /** XP-Bedarf für den Sprung von `level` auf `level + 1`. */
 export function xpForLevel(level) {
@@ -32,8 +23,9 @@ export function deriveLevel(totalXp) {
   return { level, into: remaining, need, ratio: need ? remaining / need : 0 };
 }
 
-export function rankFor(level) {
-  let name = RANKS[0].name;
-  for (const r of RANKS) if (level >= r.from) name = r.name;
-  return name;
+/** Index des Rangs für ein Level — der Aufrufer übersetzt ihn über `rank.<index>`. */
+export function rankIndexFor(level) {
+  let idx = 0;
+  RANK_THRESHOLDS.forEach((from, i) => { if (level >= from) idx = i; });
+  return idx;
 }

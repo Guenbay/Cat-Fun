@@ -1,8 +1,11 @@
-/** Reines DOM-Zeichnen: bekommt State, schreibt Markup, kennt keine Spiellogik. */
+/**
+ * Reines DOM-Zeichnen: bekommt State und eine Übersetzungsfunktion `t`,
+ * schreibt Markup, kennt keine Spiellogik und keinen festen Text.
+ */
 
-import { RARITIES } from "../core/rarity.js";
 import { ACHIEVEMENTS } from "../game/achievements.js";
 import { isQuestDone } from "../game/quests.js";
+import { LANG_META } from "../data/i18n.js";
 
 const $ = sel => document.querySelector(sel);
 const binds = name => document.querySelectorAll(`[data-bind="${name}"]`);
@@ -11,9 +14,29 @@ export function setBind(name, value) {
   binds(name).forEach(el => { el.textContent = value; });
 }
 
+/* ---------- Statische Texte ---------- */
+
+/** Übersetzt alles, was im Markup mit data-i18n ausgezeichnet ist. */
+export function applyStaticText(t, lang) {
+  document.documentElement.lang = LANG_META[lang]?.htmlLang || lang;
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll("[data-i18n-label]").forEach(el => {
+    el.setAttribute("aria-label", t(el.dataset.i18nLabel));
+  });
+
+  const combo = $("#combo-text");
+  if (combo) combo.innerHTML = t("combo.text");
+}
+
 /* ---------- Kopf & Spieler ---------- */
 
-export function renderHeader(state, derived, pool) {
+export function renderHeader(state, derived, pool, t) {
   setBind("streak", state.streak);
   setBind("coins", state.coins);
   setBind("level", derived.level);
@@ -24,12 +47,10 @@ export function renderHeader(state, derived, pool) {
   setBind("combo", state.combo);
   setBind("bestCombo", state.bestCombo);
   setBind("legendary", state.facts.filter(f => f.rarity === "legendary").length);
-  setBind("langIcon", (state.lang || "de").toUpperCase());
-  setBind("poolHave", pool.have);
-  setBind("poolTotal", pool.total);
 
-  const src = $("#stage-src");
-  if (src) src.textContent = state.lang === "de" ? "· deutscher Vorrat" : "· catfact.ninja";
+  setBind("langIcon", LANG_META[state.lang]?.label || state.lang.toUpperCase());
+  setBind("poolLang", LANG_META[state.lang]?.label || state.lang.toUpperCase());
+  setBind("poolText", pool.unlimited ? t("kpi.poolUnlimited") : `${pool.have} / ${pool.total}`);
 
   const pct = Math.round(derived.ratio * 100);
   const bar = $("#xp-bar");
@@ -45,18 +66,21 @@ export function renderHeader(state, derived, pool) {
     ring.style.strokeDashoffset = String(circumference * (1 - derived.ratio));
   }
 
+  const src = $("#stage-src");
+  if (src) src.textContent = pool.unlimited ? t("stage.src.api") : t("stage.src.pool");
+
   $("#chip-streak")?.classList.toggle("is-hot", state.streak >= 3);
 }
 
 /* ---------- Fakten-Karte ---------- */
 
-const SOURCE_LABEL = {
-  pool:    "Vorrat DE",
-  api:     "catfact.ninja",
-  offline: "Vorrat EN (offline)",
-};
+function sourceLabel(entry, t) {
+  if (entry.source === "api") return t("src.api");
+  if (entry.source === "offline") return t("src.offline");
+  return t("src.pool");
+}
 
-export function renderFact(entry, { xpGained, isNew, combo }) {
+export function renderFact(entry, { xpGained, isNew, combo }, t) {
   const card = $("#factcard");
   const text = $("#fact-text");
   const pill = $("#rarity-pill");
@@ -68,13 +92,13 @@ export function renderFact(entry, { xpGained, isNew, combo }) {
   card.dataset.rarity = entry.rarity;
   if (pill) {
     pill.dataset.rarity = entry.rarity;
-    pill.textContent = RARITIES[entry.rarity].label;
+    pill.textContent = t(`rarity.${entry.rarity}`);
   }
-  if (idEl) idEl.textContent = `${entry.id} · ${(entry.lang || "de").toUpperCase()} · ${SOURCE_LABEL[entry.source] || entry.source}`;
+  if (idEl) idEl.textContent = `${entry.id} · ${(entry.lang || "de").toUpperCase()} · ${sourceLabel(entry, t)}`;
   if (xpEl) {
-    const parts = [`+${xpGained} XP`];
-    if (combo > 1) parts.push(`${combo}× Combo`);
-    if (!isNew) parts.push("Dublette");
+    const parts = [t("fact.xp", { xp: xpGained })];
+    if (combo > 1) parts.push(t("fact.combo", { n: combo }));
+    if (!isNew) parts.push(t("fact.duplicate"));
     xpEl.textContent = parts.join(" · ");
   }
 
@@ -83,16 +107,36 @@ export function renderFact(entry, { xpGained, isNew, combo }) {
   card.classList.add("is-fresh");
 }
 
-export function renderFavoriteButton(isFavorite) {
+/** Setzt die Bühne auf den Startzustand — nach einem Reset oder Sprachwechsel. */
+export function renderEmptyStage(t) {
+  const text = $("#fact-text");
+  if (text) text.innerHTML = t("fact.placeholder");
+
+  const card = $("#factcard");
+  if (card) card.dataset.rarity = "common";
+
+  const pill = $("#rarity-pill");
+  if (pill) { pill.dataset.rarity = "common"; pill.textContent = t("rarity.common"); }
+
+  const idEl = $("#fact-id");
+  if (idEl) idEl.textContent = "#000";
+
+  const xpEl = $("#fact-xp");
+  if (xpEl) xpEl.textContent = "";
+
+  renderFavoriteButton(false, t);
+}
+
+export function renderFavoriteButton(isFavorite, t) {
   const btn = $("#btn-favorite");
   if (!btn) return;
   btn.setAttribute("aria-pressed", String(Boolean(isFavorite)));
-  btn.querySelector(".btn__label").textContent = isFavorite ? "Favorit ✓" : "Favorit";
+  btn.querySelector(".btn__label").textContent = isFavorite ? t("btn.favOn") : t("btn.fav");
 }
 
 /* ---------- Tagesaufgaben ---------- */
 
-export function renderQuests(quests, progress, claimed) {
+export function renderQuests(quests, progress, claimed, t) {
   const list = $("#quest-list");
   if (!list) return;
   list.innerHTML = "";
@@ -106,12 +150,13 @@ export function renderQuests(quests, progress, claimed) {
     li.innerHTML = `
       <div class="quest__top">
         <span class="quest__name"></span>
-        <span class="quest__reward">+${q.xp} XP · ${q.coins} 🐟</span>
+        <span class="quest__reward"></span>
       </div>
       <div class="quest__bar"><span></span></div>
       <span class="quest__count"></span>`;
 
-    li.querySelector(".quest__name").textContent = (done ? "✓ " : "") + q.name;
+    li.querySelector(".quest__name").textContent = (done ? "✓ " : "") + t(`quest.${q.id}`);
+    li.querySelector(".quest__reward").textContent = t("quests.reward", { xp: q.xp, coins: q.coins });
     li.querySelector(".quest__bar span").style.width = (have / q.goal) * 100 + "%";
     li.querySelector(".quest__count").textContent = `${have} / ${q.goal}`;
     list.appendChild(li);
@@ -120,7 +165,7 @@ export function renderQuests(quests, progress, claimed) {
 
 /* ---------- Achievements ---------- */
 
-export function renderAchievements(unlocked) {
+export function renderAchievements(unlocked, t) {
   const list = $("#badge-list");
   if (!list) return;
   list.innerHTML = "";
@@ -132,8 +177,8 @@ export function renderAchievements(unlocked) {
       <span class="badge__icon">${a.icon}</span>
       <span class="badge__name"></span>
       <span class="badge__desc"></span>`;
-    li.querySelector(".badge__name").textContent = a.name;
-    li.querySelector(".badge__desc").textContent = a.desc;
+    li.querySelector(".badge__name").textContent = t(`ach.${a.id}.name`);
+    li.querySelector(".badge__desc").textContent = t(`ach.${a.id}.desc`);
     list.appendChild(li);
   }
 
@@ -143,7 +188,7 @@ export function renderAchievements(unlocked) {
 
 /* ---------- Sammlung ---------- */
 
-export function renderCollection(facts, filter, onToggleFavorite) {
+export function renderCollection(facts, filter, onToggleFavorite, t) {
   const list = $("#collection-list");
   const empty = $("#collection-empty");
   if (!list) return;
@@ -167,17 +212,19 @@ export function renderCollection(facts, filter, onToggleFavorite) {
     li.innerHTML = `
       <div class="card__top">
         <span class="card__rarity"></span>
-        <span style="margin-left:auto" class="card__lang"></span>
-        <button class="card__fav" type="button" aria-pressed="${Boolean(f.favorite)}" title="Als Favorit markieren">⭐</button>
+        <span class="card__lang"></span>
+        <button class="card__fav" type="button" aria-pressed="${Boolean(f.favorite)}">⭐</button>
       </div>
       <p class="card__text"></p>
       <span class="card__meta"></span>`;
 
-    li.querySelector(".card__rarity").textContent = RARITIES[f.rarity].label;
+    li.querySelector(".card__rarity").textContent = t(`rarity.${f.rarity}`);
     li.querySelector(".card__lang").textContent = (f.lang || "de").toUpperCase();
     li.querySelector(".card__text").textContent = f.text;
-    li.querySelector(".card__meta").textContent = `${f.id} · ${f.seen}× gezogen`;
-    li.querySelector(".card__fav").addEventListener("click", () => onToggleFavorite(f.key));
+    li.querySelector(".card__meta").textContent = `${f.id} · ${t("card.drawn", { n: f.seen })}`;
+    const fav = li.querySelector(".card__fav");
+    fav.title = t("btn.fav");
+    fav.addEventListener("click", () => onToggleFavorite(f.key));
 
     list.appendChild(li);
   }

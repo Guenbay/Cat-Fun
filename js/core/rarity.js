@@ -1,12 +1,13 @@
 /**
  * Seltenheit eines Fakts. Sie wird aus dem Text selbst abgeleitet, damit
  * derselbe Fakt bei jedem Spieler dieselbe Stufe hat — wie eine Karten-ID.
+ * Die Bezeichnungen liegen übersetzt in i18n unter `rarity.<stufe>`.
  */
 export const RARITIES = {
-  common:    { label: "Common",    xp: 10,  weight: 1 },
-  rare:      { label: "Selten",    xp: 25,  weight: 2 },
-  epic:      { label: "Episch",    xp: 60,  weight: 4 },
-  legendary: { label: "Legendär",  xp: 150, weight: 8 },
+  common:    { xp: 10,  weight: 1 },
+  rare:      { xp: 25,  weight: 2 },
+  epic:      { xp: 60,  weight: 4 },
+  legendary: { xp: 150, weight: 8 },
 };
 
 export const RARITY_ORDER = ["common", "rare", "epic", "legendary"];

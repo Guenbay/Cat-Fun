@@ -1,16 +1,27 @@
 import { FACTS_DE } from "../data/facts-de.js";
 import { FACTS_EN } from "../data/facts-en.js";
+import { FACTS_TR } from "../data/facts-tr.js";
 
 const ENDPOINT = "https://catfact.ninja/fact";
 const TIMEOUT_MS = 6000;
 
+/**
+ * Pro Sprache: der eingebaute Pool und ob zusätzlich eine API befragt wird.
+ * Nur Englisch hat eine Quelle im Netz — für Deutsch und Türkisch gibt es
+ * keine Katzenfakten-API, deshalb sind diese Pools die alleinige Quelle.
+ */
 export const LANGS = {
-  de: { label: "DE", pool: FACTS_DE, finite: true },
-  en: { label: "EN", pool: FACTS_EN, finite: false },
+  de: { pool: FACTS_DE, api: false },
+  en: { pool: FACTS_EN, api: true },
+  tr: { pool: FACTS_TR, api: false },
 };
 
 export function poolSize(lang) {
   return (LANGS[lang] || LANGS.de).pool.length;
+}
+
+export function hasApi(lang) {
+  return Boolean((LANGS[lang] || LANGS.de).api);
 }
 
 /**
@@ -30,18 +41,14 @@ function pickFrom(pool, known) {
 /**
  * Liefert einen Fakt in der gewünschten Sprache.
  *
- * DE kommt immer aus dem eingebauten Pool — es gibt keine deutschsprachige
- * Katzenfakten-API. EN fragt catfact.ninja und fällt bei Netzfehler,
- * Timeout oder leerer Antwort still auf den englischen Vorrat zurück.
- *
- * @param {"de"|"en"} lang
+ * @param {"de"|"en"|"tr"} lang
  * @param {Set<string>} known Bereits gesammelte Texte
  * @returns {Promise<{text: string, source: "pool"|"api"|"offline", exhausted: boolean}>}
  */
 export async function fetchFact(lang, known = new Set()) {
   const cfg = LANGS[lang] || LANGS.de;
 
-  if (lang === "de") {
+  if (!cfg.api) {
     const { text, exhausted } = pickFrom(cfg.pool, known);
     return { text, source: "pool", exhausted };
   }

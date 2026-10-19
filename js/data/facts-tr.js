@@ -1,0 +1,122 @@
+/**
+ * Türkçe bilgi havuzu — TR modunun tek kaynağı.
+ * Türkçe bir kedi bilgisi API'si olmadığı için bilgiler projenin içinde durur,
+ * böylece TR modu tamamen ağdan bağımsız çalışır.
+ */
+export const FACTS_TR = [
+  // — Uyku ve davranış —
+  "Kediler ömürlerinin yaklaşık yüzde 70'ini uyuyarak geçirir, yani günde 13 ila 16 saat.",
+  "Kediler kısa aralıklarla uyur: Bir kedi uykusu çoğu zaman yalnızca 15 ila 30 dakika sürer.",
+  "Kediler rüya görürken patileri ve bıyıkları seğirir — tıpkı insanlar gibi REM evresinden geçerler.",
+  "Kediler gece değil, alacakaranlık hayvanıdır: En hareketli saatleri gün doğumu ve batımı çevresidir.",
+  "Karnı tok bir kedi de avlanmayı sürdürür — avlanma dürtüsü ile açlık birbirinden bağımsızdır.",
+  "Kediler uyanık geçirdikleri zamanın üçte birine kadarını tüy bakımına ayırır.",
+  "Kedi kendini yalarken tüyüne tükürük yayar; bu tükürüğün buharlaşması onu serinletir.",
+  "Kedinin patileriyle yoğurma hareketi, yavruyken emzirme döneminden kalmadır.",
+  "Kediler koku izi bırakmak için başlarını insanlara sürter.",
+  "Kedi, yanaklarındaki, patilerindeki ve kuyruk dibindeki koku bezleriyle iz bırakır.",
+  "Kediler sindirimi hızlandırmak ve tüy yumaklarından kurtulmak için ot yer.",
+  "Kediler akan suyu tercih eder, çünkü doğada akan su durgun sudan daha tazedir.",
+
+  // — İletişim —
+  "Kediler yaklaşık 100 farklı ses çıkarabilir, köpekler ise yalnızca on kadar.",
+  "Yetişkin kediler neredeyse sadece insanlara miyavlar, kendi aralarında pek miyavlamazlar.",
+  "Kedi güven göstermek için yavaşça göz kırpar. Siz de karşılık verirseniz bunu anlar.",
+  "Dik tutulan ve ucu hafif kıvrık bir kuyruk, kediler arasında dostça bir selamdır.",
+  "Mırlama her zaman keyif demek değildir: Kediler acı ve stres anında da mırlar.",
+  "Mırlama çoğunlukla 25 ila 150 hertz arasındadır; bu aralık kemik iyileşmesini destekleyebilir.",
+  "Aslan ve kaplan gibi büyük kediler kükreyebilir, ama ev kedileri gibi sürekli mırlayamaz.",
+  "Kedi kendi adını tanır, tepki vermese bile — Japonya'da yapılan çalışmalar bunu gösterdi.",
+  "Kediler sahiplerinin sesini tanır, ama çoğu zaman bilerek tepki vermemeyi seçer.",
+
+  // — Duyular —
+  "Kediler, bir insanın ihtiyaç duyduğu ışığın altıda biriyle rahatça görebilir.",
+  "Kedi gözünde ışığı yansıtan bir tapetum lucidum tabakası vardır — karanlıktaki parıltının sebebi budur.",
+  "Kedinin göz bebeği alanını kat kat büyütebilir, bir insanınkinden çok daha fazla.",
+  "Kedilerin gözü koruyan ve nemlendiren üçüncü bir göz kapağı, yani nikitan zarı vardır.",
+  "Kediler kırmızıyı göremez; renk görüşleri kırmızı-yeşil renk körü bir insanınkine benzer.",
+  "Bir kedinin görüş alanı yaklaşık 200 derecedir, insanınki ise 180 civarında.",
+  "Kedi burnunun hemen önündeki nesneleri net göremez — bunun için bıyıklarını kullanır.",
+  "Kedinin bıyıkları aşağı yukarı gövdesi kadar geniştir ve ona ölçü şeridi görevi görür.",
+  "Bir kedinin her yanında on ikişer, dört sıra hâlinde yaklaşık 24 bıyığı vardır.",
+  "Kediler ultrasonu duyar ve yaklaşık 64 kilohertze kadar olan frekansları algılar.",
+  "Bir kedi, bir metre uzaktan yalnızca birkaç santim arayla duran iki ses kaynağını ayırt edebilir.",
+  "Kedilerin her kulağında 32 kas vardır ve kulaklarını 180 derece döndürebilirler.",
+  "Bir kedide yaklaşık 60 ila 80 milyon koku hücresi bulunur, bir insanda ise beş milyon kadar.",
+  "Kedilerin damağında Jacobson organı denen ek bir koku organı vardır.",
+  "Kedi ağzını hafifçe aralayıp üst dudağını kaldırarak koku moleküllerini Jacobson organına yönlendirir.",
+  "Koku duyusu kediler için görmekten önemlidir: Yeni doğan yavrular anneyi yalnızca kokudan bulur.",
+  "Kediler tatlıyı tadamaz — bunun için gereken reseptör onlarda yoktur.",
+
+  // — Vücut yapısı —
+  "Kedilerde 230 kemik vardır, insanlarda ise yalnızca 206.",
+  "Bir kedinin kuyruğu, tüm kemiklerinin neredeyse yüzde onunu barındırır.",
+  "Kedinin köprücük kemiği kasın içinde serbest durur, iskelete sıkı bağlı değildir — bu onu olağanüstü esnek kılar.",
+  "Bir kedi, başının sığdığı her delikten geçebilir.",
+  "Kedilerin ön ayaklarında beş, arka ayaklarında dört parmak vardır.",
+  "Fazladan parmağı olan kediye polidaktil denir — Ernest Hemingway böyle kediler beslerdi.",
+  "Kediler yalnızca pati tabanlarından terler.",
+  "Bir kedide 30 kalıcı diş vardır, yetişkin bir insanda ise 32.",
+  "Yavru kediler süt dişlerini yaklaşık üç ila dört aylıkken kaybeder.",
+  "Kedinin dili, keratinden yapılmış geriye kıvrık minik kancalar olan papillalarla kaplıdır.",
+  "Bir kedinin burun izi, insan parmak izi kadar benzersizdir.",
+  "Kedinin kalbi dakikada 140 ila 220 kez atar, yani insanınkinin yaklaşık iki katı hızda.",
+  "Bir kedinin normal vücut sıcaklığı yaklaşık 38 ila 39 santigrat derecedir.",
+  "Kedi ile insan kafatasının biçimi, kedi ile köpeğinkinden daha çok benzeşir.",
+
+  // — Hareket —
+  "Bir ev kedisi kısa mesafede saatte 48 kilometreye kadar koşabilir.",
+  "Bir kedi, gövde uzunluğunun altı katı mesafeye sıçrayabilir.",
+  "Bir kedi iki metre yüksekliğe, yani omuz yüksekliğinin yaklaşık beş katına zıplayabilir.",
+  "Kediler deve ve zürafa gibi yürür: önce sağdaki iki ayak, sonra soldaki iki ayak.",
+  "Kediler doğrulma refleksi sayesinde neredeyse her zaman patileri üstüne düşer.",
+  "İç kulaktaki denge duyusu, düşen bir kedinin dönmesini sağlayan doğrulma refleksini yönetir.",
+  "Yüksekten düşerken kediler bacaklarını açar ve böylece paraşüt gibi yavaşlar.",
+  "Kediler kolayca yukarı tırmanır ama inmekte zorlanır: Tırnakları geriye doğrudur.",
+  "Kediler tırnaklarını içeri çekebilir — büyük kediler arasında çita bunun istisnasıdır.",
+  "Kediler dilinin ucunu batırıp bir sıvı sütunu yukarı çekerek içer — saniyede yaklaşık dört kez.",
+  "Kediler sıvıyı dilinin üstüyle değil, alt yüzüyle alır.",
+
+  // — Tüy ve genetik —
+  "Mavi gözlü beyaz kediler ortalamanın çok üzerinde bir oranda sağırdır.",
+  "Beyaz bir kedinin gözleri iki farklı renkteyse, çoğu zaman yalnızca mavi tarafındaki kulak sağırdır.",
+  "Üç renkli kedilerin neredeyse hepsi dişidir; erkek olanlar çok nadirdir ve genelde kısırdır.",
+  "Alaca kedinin deseni, X kromozomlarından birinin rastgele devre dışı kalmasıyla oluşur.",
+  "Siyam kedilerinin rengi sıcaklığa bağlıdır: Vücudun daha serin yerlerinde tüy koyulaşır.",
+  "Siyam yavruları neredeyse bembeyaz doğar ve ancak birkaç hafta sonra koyulaşır.",
+  "Maine Coon en iri ev kedisi ırklarından biridir ve bir metreyi aşabilir.",
+  "Sphynx tamamen tüysüz değildir, ince bir hav tabakasıyla kaplıdır.",
+
+  // — Beslenme ve sağlık —
+  "Kediler zorunlu etçildir ve vejetaryen beslenemezler.",
+  "Kedinin mamasında taurin bulunmalıdır; bu amino asit olmadan kör olabilir.",
+  "Yetişkin kediler çoğunlukla sütü sindiremez — laktaz enzimleri yoktur.",
+  "Çikolata kediler için zehirlidir; soğan, üzüm ve zambak da öyle.",
+  "Zambaklar kediler için özellikle tehlikelidir: Poleni bile böbreklere zarar verebilir.",
+  "Kedilerin yaklaşık üçte biri kedi nanesine hiç tepki vermez — bu eğilim kalıtsaldır.",
+  "Yavru kediler kedi nanesine ancak üç aylık olduktan sonra tepki vermeye başlar.",
+  "Beş ila on beş dakika sonra kedi, kedi nanesine geçici olarak duyarsızlaşır.",
+
+  // — Üreme ve yaş —
+  "Kedilerde gebelik yaklaşık 63 ila 67 gün sürer.",
+  "Bir batında genellikle üç ila beş yavru olur.",
+  "Aynı batındaki yavruların babaları farklı olabilir.",
+  "Yavru kediler gözlerini doğumdan ancak yedi ila on gün sonra açar.",
+  "Kediler daha dört aylıkken ergenliğe ulaşabilir.",
+  "Ev kedileri ortalama 12 ila 18 yıl yaşar, dışarı çıkanlar genelde daha az.",
+  "Bilinen en yaşlı ev kedisi 38 yaşına kadar yaşadı.",
+
+  // — Kültür ve tarih —
+  "Ev kedisi Afrika yaban kedisinden gelir.",
+  "Kediler yaklaşık 9.500 yıl önce evcilleştirildi — Kıbrıs'taki bir mezar bunu kanıtlıyor.",
+  "Eski Mısır'da kedi, tanrıça Bastet'e adanmıştı.",
+  "Eski Mısır'da kedisi ölen kişiler yas işareti olarak kaşlarını kazırdı.",
+  "Eski Mısır'da kedi ihracı bir dönem cezaya tabi tutularak yasaklanmıştı.",
+  "Gemilerde yüzyıllar boyunca farelere karşı kedi taşındı.",
+  "İlk kedi sergisi 1871'de Londra'daki Crystal Palace'ta düzenlendi.",
+  "Félicette adlı kedi 1963'te uzaya giden ilk ve tek kedi oldu.",
+  "Kedi kapısının icadı fizikçi Isaac Newton'a atfedilir — ama bu hikâye belgelenmiş değildir.",
+  "Siyah kediler Japonya'da ve Britanya'da uğur sayılır.",
+  "Almanca ve İngilizcedeki kedi sözcükleri geç Latincedeki cattus'tan gelir.",
+  "İngilizcede bir kedi topluluğuna clowder, yavru topluluğuna ise kindle denir.",
+];

@@ -2,14 +2,14 @@
    Purrdex — Orchestrierung: State, Spielregeln, Ereignisse
    ============================================================ */
 
-import { fetchFact, poolSize } from "./core/api.js";
-import { FACTS_DE } from "./data/facts-de.js";
+import { fetchFact, poolSize, hasApi, LANGS } from "./core/api.js";
 import { loadSave, persist, clearSave } from "./core/storage.js";
 import { rarityOf, cardId, RARITIES, hashText } from "./core/rarity.js";
-import { play, setSoundEnabled, isSoundEnabled } from "./core/audio.js";
-import { deriveLevel, rankFor } from "./game/xp.js";
+import { play, setSoundEnabled } from "./core/audio.js";
+import { deriveLevel, rankIndexFor } from "./game/xp.js";
 import { evaluateAchievements } from "./game/achievements.js";
 import { questsForDay, todayKey, emptyProgress, isQuestDone } from "./game/quests.js";
+import { translator, LANG_ORDER, LANG_META } from "./data/i18n.js";
 import { toast } from "./ui/toast.js";
 import { startPawField, burst, popChip } from "./ui/effects.js";
 import * as view from "./ui/render.js";
@@ -26,7 +26,7 @@ function freshState() {
   return {
     xp: 0,
     coins: 0,
-    facts: [],              // { key, id, text, rarity, favorite, seen, source }
+    facts: [],              // { key, id, text, rarity, favorite, seen, source, lang }
     unlocked: [],
     combo: 0,
     bestCombo: 0,
@@ -38,8 +38,8 @@ function freshState() {
     questClaimed: [],
     questDaysCleared: 0,
     sound: true,
-    lang: "de",
     theme: "midnight",
+    lang: "de",
     flags: {},
   };
 }
@@ -55,10 +55,12 @@ function hydrate(raw) {
   merged.questClaimed = Array.isArray(raw.questClaimed) ? raw.questClaimed : [];
   merged.questProgress = { ...emptyProgress(), ...(raw.questProgress || {}) };
   merged.flags = { ...(raw.flags || {}) };
+  if (!LANGS[merged.lang]) merged.lang = "de";
   return merged;
 }
 
 let state = hydrate(loadSave());
+let t = translator(state.lang);
 let quests = [];
 let filter = "all";
 let currentKey = null;
@@ -70,11 +72,21 @@ let busy = false;
 
 function derived() {
   const d = deriveLevel(state.xp);
-  return { ...d, rank: rankFor(d.level) };
+  return { ...d, rank: t(`rank.${rankIndexFor(d.level)}`) };
 }
 
 function currentEntry() {
   return state.facts.find(f => f.key === currentKey) || null;
+}
+
+/** Wie viel des Pools der aktuellen Sprache schon gesammelt ist. */
+function poolProgress() {
+  const lang = state.lang;
+  if (hasApi(lang)) return { unlimited: true, have: 0, total: 0 };
+
+  const owned = new Set(state.facts.filter(f => (f.lang || "de") === lang).map(f => f.text));
+  const have = LANGS[lang].pool.filter(text => owned.has(text)).length;
+  return { unlimited: false, have, total: poolSize(lang) };
 }
 
 /* ---------- Tageswechsel: Streak & Quests ---------- */
@@ -93,9 +105,9 @@ function rolloverDay() {
     const yesterday = todayKey(new Date(Date.now() - 86_400_000));
     if (state.lastPlayDay === yesterday) {
       state.streak += 1;
-      toast({ icon: "🔥", title: `Streak ${state.streak} Tage`, body: "Weiter so — morgen wieder vorbeischauen." });
+      toast({ icon: "🔥", title: t("toast.streak.title", { n: state.streak }), body: t("toast.streak.body") });
     } else if (state.lastPlayDay !== null) {
-      if (state.streak > 1) toast({ icon: "💔", title: "Streak zurückgesetzt", body: "Ein Tag ohne Fakten. Neustart bei 1." });
+      if (state.streak > 1) toast({ icon: "💔", title: t("toast.streakLost.title"), body: t("toast.streakLost.body") });
       state.streak = 1;
     } else {
       state.streak = 1;
@@ -126,12 +138,7 @@ function tickCombo() {
   const secs = document.getElementById("combo-secs");
 
   if (left <= 0) {
-    clearInterval(comboTimer);
-    comboTimer = null;
-    state.combo = 0;
-    const meter = document.getElementById("combo-meter");
-    meter?.classList.remove("is-on");
-    meter?.setAttribute("aria-hidden", "true");
+    stopCombo();
     view.setBind("combo", 0);
     save();
     return;
@@ -139,6 +146,16 @@ function tickCombo() {
 
   if (fill) fill.style.transform = `scaleX(${left / COMBO_WINDOW_MS})`;
   if (secs) secs.textContent = Math.ceil(left / 1000);
+}
+
+function stopCombo() {
+  clearInterval(comboTimer);
+  comboTimer = null;
+  state.combo = 0;
+
+  const meter = document.getElementById("combo-meter");
+  meter?.classList.remove("is-on");
+  meter?.setAttribute("aria-hidden", "true");
 }
 
 function comboMultiplier() {
@@ -154,10 +171,10 @@ function grant(xp, coins) {
   const after = deriveLevel(state.xp).level;
 
   if (after > before) {
-    const rank = rankFor(after);
+    const rank = t(`rank.${rankIndexFor(after)}`);
     view.showLevelUp(after, rank);
     play("levelup");
-    toast({ icon: "🎊", title: `Level ${after}`, body: rank, gold: true });
+    toast({ icon: "🎊", title: t("toast.level.title", { n: after }), body: rank, gold: true });
   }
   popChip(document.getElementById("chip-coins"));
 }
@@ -165,25 +182,30 @@ function grant(xp, coins) {
 function checkAchievements() {
   const fresh = evaluateAchievements(state, derived().level);
   for (const a of fresh) {
-    toast({ icon: a.icon, title: `Achievement: ${a.name}`, body: a.desc, gold: true });
+    toast({
+      icon: a.icon,
+      title: t("toast.ach.title", { name: t(`ach.${a.id}.name`) }),
+      body: t(`ach.${a.id}.desc`),
+      gold: true,
+    });
     play("unlock");
     grant(40, 15);
   }
-  return fresh.length > 0;
 }
 
 function checkQuests() {
-  let changed = false;
-
   for (const q of quests) {
     if (state.questClaimed.includes(q.id)) continue;
     if (!isQuestDone(q, state.questProgress)) continue;
 
     state.questClaimed.push(q.id);
     grant(q.xp, q.coins);
-    toast({ icon: "✅", title: `Aufgabe erledigt: ${q.name}`, body: `+${q.xp} XP · ${q.coins} Fischli` });
+    toast({
+      icon: "✅",
+      title: t("toast.quest.title", { name: t(`quest.${q.id}`) }),
+      body: t("toast.quest.body", { xp: q.xp, coins: q.coins }),
+    });
     play("unlock");
-    changed = true;
   }
 
   const allDone = quests.length > 0 && quests.every(q => state.questClaimed.includes(q.id));
@@ -191,10 +213,8 @@ function checkQuests() {
     state.flags.questDayKey = state.questDay;
     state.questDaysCleared += 1;
     grant(120, 60);
-    toast({ icon: "🏆", title: "Alle Tagesaufgaben erledigt", body: "+120 XP · 60 Fischli", gold: true });
-    changed = true;
+    toast({ icon: "🏆", title: t("toast.allQuests.title"), body: t("toast.allQuests.body"), gold: true });
   }
-  return changed;
 }
 
 /* ---------- Kernaktion: Fakt ziehen ---------- */
@@ -221,7 +241,7 @@ async function drawFact() {
       entry = { key, id: cardId(text), text, rarity, favorite: false, seen: 0, source, lang: state.lang };
       state.facts.push(entry);
       state.questProgress.newCards += 1;
-      if (rarity === "rare" || rarity === "epic" || rarity === "legendary") state.questProgress.rarePlus += 1;
+      if (rarity !== "common") state.questProgress.rarePlus += 1;
       if (rarity === "epic" || rarity === "legendary") state.questProgress.epicPlus += 1;
     }
     entry.seen += 1;
@@ -239,29 +259,30 @@ async function drawFact() {
 
     grant(xpGained, coinsGained);
 
-    view.renderFact(entry, { xpGained, isNew, combo: state.combo });
-    view.renderFavoriteButton(entry.favorite);
+    view.renderFact(entry, { xpGained, isNew, combo: state.combo }, t);
+    view.renderFavoriteButton(entry.favorite, t);
     burst(document.getElementById("factcard"), rarity);
     play(rarity === "common" ? "draw" : rarity);
 
     if (isNew && rarity !== "common") {
       toast({
         icon: rarity === "legendary" ? "👑" : rarity === "epic" ? "🔮" : "💎",
-        title: `${RARITIES[rarity].label}er Fakt!`,
-        body: `${entry.id} wandert in deine Sammlung.`,
+        title: t("toast.rarity.title", { rarity: t(`rarity.${rarity}`) }),
+        body: t("toast.rarity.body", { id: entry.id }),
         gold: rarity === "legendary",
       });
     }
     if (source === "offline" && !state.flags.offlineNoticed) {
       state.flags.offlineNoticed = true;
-      toast({ icon: "📴", title: "Offline-Modus", body: "catfact.ninja nicht erreichbar — der englische Vorrat springt ein." });
+      toast({ icon: "📴", title: t("toast.offline.title"), body: t("toast.offline.body") });
     }
-    if (exhausted && state.lang === "de" && !state.flags.poolCompleteDE) {
-      state.flags.poolCompleteDE = true;
+    const poolFlag = `poolComplete_${state.lang}`;
+    if (exhausted && !state.flags[poolFlag]) {
+      state.flags[poolFlag] = true;
       toast({
         icon: "🏅", gold: true,
-        title: "Deutscher Pool komplett",
-        body: `Alle ${poolSize("de")} deutschen Fakten gesammelt. Schalt auf EN für unbegrenzten Nachschub.`,
+        title: t("toast.poolDone.title"),
+        body: t("toast.poolDone.body", { n: poolSize(state.lang) }),
       });
     }
 
@@ -286,7 +307,7 @@ function toggleFavorite(key) {
   if (entry.favorite) state.questProgress.favorites += 1;
   play("click");
 
-  if (key === currentKey) view.renderFavoriteButton(entry.favorite);
+  if (key === currentKey) view.renderFavoriteButton(entry.favorite, t);
   checkQuests();
   checkAchievements();
   renderAll();
@@ -298,21 +319,41 @@ function toggleFavorite(key) {
 async function copyCurrent() {
   const entry = currentEntry();
   if (!entry) {
-    toast({ icon: "🐈", title: "Noch kein Fakt", body: "Zieh erst einen Fakt." });
+    toast({ icon: "🐈", title: t("toast.noFact.title"), body: t("toast.noFact.body") });
     return;
   }
 
-  const payload = `${entry.text}\n\n— Purrdex ${entry.id} · ${RARITIES[entry.rarity].label}`;
+  const payload = `${entry.text}\n\n— Purrdex ${entry.id} · ${t(`rarity.${entry.rarity}`)}`;
   try {
     await navigator.clipboard.writeText(payload);
-    toast({ icon: "📋", title: "Kopiert", body: "Der Fakt liegt in der Zwischenablage." });
+    toast({ icon: "📋", title: t("toast.copied.title"), body: t("toast.copied.body") });
   } catch {
-    toast({ icon: "⚠️", title: "Kopieren nicht möglich", body: "Der Browser hat den Zugriff abgelehnt." });
+    toast({ icon: "⚠️", title: t("toast.copyFail.title"), body: t("toast.copyFail.body") });
   }
   play("click");
 }
 
-/* ---------- Theme & Sound ---------- */
+/* ---------- Sprache, Theme, Sound ---------- */
+
+function applyLanguage() {
+  t = translator(state.lang);
+  view.applyStaticText(t, state.lang);
+
+  // Filter-Beschriftungen stehen im Markup und werden von applyStaticText
+  // erneuert — die aktive Markierung muss danach wiederhergestellt werden.
+  document.querySelectorAll(".filter").forEach(b => {
+    b.classList.toggle("is-active", b.dataset.filter === filter);
+  });
+
+  const entry = currentEntry();
+  if (entry) {
+    view.renderFact(entry, { xpGained: 0, isNew: true, combo: 0 }, t);
+    document.getElementById("fact-xp").textContent = t("fact.lastDrawn");
+    view.renderFavoriteButton(entry.favorite, t);
+  } else {
+    view.renderEmptyStage(t);
+  }
+}
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme;
@@ -327,17 +368,12 @@ function applySound() {
 
 /* ---------- Rendern & Speichern ---------- */
 
-function poolProgress() {
-  const have = new Set(FACTS_DE.filter(t => state.facts.some(f => f.text === t))).size;
-  return { have, total: poolSize("de") };
-}
-
 function renderAll() {
   const d = derived();
-  view.renderHeader(state, d, poolProgress());
-  view.renderQuests(quests, state.questProgress, state.questClaimed);
-  view.renderAchievements(state.unlocked);
-  view.renderCollection(state.facts, filter, toggleFavorite);
+  view.renderHeader(state, d, poolProgress(), t);
+  view.renderQuests(quests, state.questProgress, state.questClaimed, t);
+  view.renderAchievements(state.unlocked, t);
+  view.renderCollection(state.facts, filter, toggleFavorite, t);
 }
 
 function save() {
@@ -383,42 +419,21 @@ function wireModal() {
 /* ---------- Zurücksetzen ---------- */
 
 function resetProgress() {
-  clearInterval(comboTimer);
-  comboTimer = null;
-
-  const meter = document.getElementById("combo-meter");
-  meter?.classList.remove("is-on");
-  meter?.setAttribute("aria-hidden", "true");
+  stopCombo();
 
   clearSave();
-  const keepTheme = state.theme;
-  const keepSound = state.sound;
-  const keepLang = state.lang;
+  const { theme, sound, lang } = state;
   state = freshState();
-  state.theme = keepTheme;
-  state.sound = keepSound;
-  state.lang = keepLang;
+  Object.assign(state, { theme, sound, lang });
   currentKey = null;
 
   rolloverDay();
   applyTheme();
   applySound();
-
-  const text = document.getElementById("fact-text");
-  if (text) text.innerHTML = 'Drück auf <strong>Neuer Fakt</strong> und fang an zu sammeln.';
-  const card = document.getElementById("factcard");
-  if (card) card.dataset.rarity = "common";
-  const pill = document.getElementById("rarity-pill");
-  if (pill) { pill.dataset.rarity = "common"; pill.textContent = "Common"; }
-  const idEl = document.getElementById("fact-id");
-  if (idEl) idEl.textContent = "#000";
-  const xpEl = document.getElementById("fact-xp");
-  if (xpEl) xpEl.textContent = "";
-  view.renderFavoriteButton(false);
-
+  view.renderEmptyStage(t);
   renderAll();
   save();
-  toast({ icon: "🧹", title: "Zurückgesetzt", body: "Frischer Start — viel Spaß beim Sammeln." });
+  toast({ icon: "🧹", title: t("toast.reset.title"), body: t("toast.reset.body") });
 }
 
 /* ---------- Ereignisse ---------- */
@@ -432,25 +447,25 @@ function wireEvents() {
 
   document.getElementById("btn-share")?.addEventListener("click", copyCurrent);
 
+  document.getElementById("btn-lang")?.addEventListener("click", () => {
+    const next = (LANG_ORDER.indexOf(state.lang) + 1) % LANG_ORDER.length;
+    state.lang = LANG_ORDER[next];
+    play("click");
+    applyLanguage();
+    renderAll();
+    save();
+    toast({
+      icon: LANG_META[state.lang].flag,
+      title: t("toast.lang.title"),
+      body: t("toast.lang.body", { n: poolSize(state.lang) }),
+    });
+  });
+
   document.getElementById("btn-sound")?.addEventListener("click", () => {
     state.sound = !state.sound;
     applySound();
     if (state.sound) play("click");
     save();
-  });
-
-  document.getElementById("btn-lang")?.addEventListener("click", () => {
-    state.lang = state.lang === "de" ? "en" : "de";
-    play("click");
-    renderAll();
-    save();
-    toast({
-      icon: state.lang === "de" ? "🇩🇪" : "🇬🇧",
-      title: state.lang === "de" ? "Deutsche Fakten" : "English facts",
-      body: state.lang === "de"
-        ? `Eingebauter Vorrat mit ${poolSize("de")} Fakten.`
-        : "Facts come from catfact.ninja — unlimited supply.",
-    });
   });
 
   document.getElementById("btn-theme")?.addEventListener("click", () => {
@@ -465,11 +480,9 @@ function wireEvents() {
       document.querySelectorAll(".filter").forEach(b => b.classList.remove("is-active"));
       btn.classList.add("is-active");
       filter = btn.dataset.filter;
-      view.renderCollection(state.facts, filter, toggleFavorite);
+      view.renderCollection(state.facts, filter, toggleFavorite, t);
     });
   });
-
-  wireModal();
 
   document.getElementById("btn-reset")?.addEventListener("click", () => {
     play("click");
@@ -496,20 +509,17 @@ function wireEvents() {
 
 function init() {
   rolloverDay();
+
+  const last = state.facts.at(-1);
+  if (last) currentKey = last.key;
+
   applyTheme();
   applySound();
+  applyLanguage();
+  wireModal();
   wireEvents();
   startPawField(document.getElementById("paw-canvas"));
   renderAll();
-
-  const entry = state.facts.at(-1);
-  if (entry) {
-    currentKey = entry.key;
-    view.renderFact(entry, { xpGained: 0, isNew: false, combo: 0 });
-    view.renderFavoriteButton(entry.favorite);
-    document.getElementById("fact-xp").textContent = "zuletzt gezogen";
-  }
-
   save();
 }
 
