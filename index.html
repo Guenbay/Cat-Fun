@@ -179,6 +179,24 @@
   <p class="sitefoot__sig">Gebaut von Guenbay 🐾</p>
 </footer>
 
+<!-- Bestätigungs-Dialog (eigener statt confirm(): native Dialoge sind in
+     eingebetteten Kontexten wie sandboxed iframes gesperrt) -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__backdrop" data-modal-dismiss></div>
+  <div class="modal__card" role="alertdialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-body">
+    <span class="modal__icon" aria-hidden="true">🧹</span>
+    <h2 class="modal__title" id="modal-title">Fortschritt zurücksetzen?</h2>
+    <p class="modal__body" id="modal-body">
+      Sammlung, Level, Streak und alle Achievements werden gelöscht.
+      Das lässt sich nicht rückgängig machen.
+    </p>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" type="button" data-modal-dismiss>Abbrechen</button>
+      <button class="btn btn--danger" type="button" id="modal-confirm">Ja, alles löschen</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toasts & Level-Up Overlay -->
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 <div class="levelup" id="levelup" hidden>

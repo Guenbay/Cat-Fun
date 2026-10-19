@@ -547,6 +547,45 @@ a { color: var(--accent-2); }
 .toast__body { font-size: .78rem; color: var(--text-dim); }
 .toast--gold { border-color: color-mix(in srgb, var(--accent-2) 60%, transparent); box-shadow: 0 0 34px -14px var(--accent-2); }
 
+/* ---------- Bestätigungs-Dialog ---------- */
+.modal {
+  position: fixed; inset: 0; z-index: 110;
+  display: grid; place-items: center;
+  padding: var(--gutter);
+}
+.modal[hidden] { display: none; }
+
+.modal__backdrop {
+  position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(10px);
+  animation: fadeIn .25s var(--ease);
+}
+
+.modal__card {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 30px 28px 24px;
+  text-align: center;
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--danger) 12%, transparent), var(--bg-soft));
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .9);
+  animation: levelPop .4s var(--ease);
+}
+
+.modal__icon { font-size: 2.2rem; display: block; }
+.modal__title { margin-top: 8px; font-size: 1.15rem; font-weight: 800; }
+.modal__body { margin-top: 8px; font-size: .88rem; color: var(--text-dim); }
+.modal__actions { margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+.btn--danger {
+  border-color: transparent;
+  background: linear-gradient(100deg, var(--danger), #ff8a5b);
+  color: #250408; font-weight: 700;
+  box-shadow: 0 14px 34px -14px var(--danger);
+}
+
 /* ---------- Level-Up Overlay ---------- */
 .levelup {
   position: fixed; inset: 0; z-index: 100;

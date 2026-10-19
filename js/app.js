@@ -328,6 +328,81 @@ function save() {
   persist(state);
 }
 
+/* ---------- Bestätigungs-Dialog ----------
+   Bewusst kein confirm(): native Dialoge sind in eingebetteten Kontexten
+   (sandboxed iframes) gesperrt und liefern dort stillschweigend false. */
+
+let onConfirm = null;
+
+function openModal(handler) {
+  const modal = document.getElementById("modal");
+  if (!modal) return;
+  onConfirm = handler;
+  modal.hidden = false;
+  document.getElementById("modal-confirm")?.focus();
+}
+
+function closeModal() {
+  const modal = document.getElementById("modal");
+  if (modal) modal.hidden = true;
+  onConfirm = null;
+}
+
+function wireModal() {
+  document.getElementById("modal-confirm")?.addEventListener("click", () => {
+    const handler = onConfirm;
+    closeModal();
+    handler?.();
+  });
+
+  document.querySelectorAll("[data-modal-dismiss]").forEach(el => {
+    el.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !document.getElementById("modal")?.hidden) closeModal();
+  });
+}
+
+/* ---------- Zurücksetzen ---------- */
+
+function resetProgress() {
+  clearInterval(comboTimer);
+  comboTimer = null;
+
+  const meter = document.getElementById("combo-meter");
+  meter?.classList.remove("is-on");
+  meter?.setAttribute("aria-hidden", "true");
+
+  clearSave();
+  const keepTheme = state.theme;
+  const keepSound = state.sound;
+  state = freshState();
+  state.theme = keepTheme;
+  state.sound = keepSound;
+  currentKey = null;
+
+  rolloverDay();
+  applyTheme();
+  applySound();
+
+  const text = document.getElementById("fact-text");
+  if (text) text.innerHTML = 'Drück auf <strong>Neuer Fakt</strong> und fang an zu sammeln.';
+  const card = document.getElementById("factcard");
+  if (card) card.dataset.rarity = "common";
+  const pill = document.getElementById("rarity-pill");
+  if (pill) { pill.dataset.rarity = "common"; pill.textContent = "Common"; }
+  const idEl = document.getElementById("fact-id");
+  if (idEl) idEl.textContent = "#000";
+  const xpEl = document.getElementById("fact-xp");
+  if (xpEl) xpEl.textContent = "";
+  view.renderFavoriteButton(false);
+
+  renderAll();
+  save();
+  toast({ icon: "🧹", title: "Zurückgesetzt", body: "Frischer Start — viel Spaß beim Sammeln." });
+}
+
 /* ---------- Ereignisse ---------- */
 
 function wireEvents() {
@@ -362,22 +437,17 @@ function wireEvents() {
     });
   });
 
+  wireModal();
+
   document.getElementById("btn-reset")?.addEventListener("click", () => {
-    const ok = confirm("Wirklich den gesamten Fortschritt löschen? Sammlung, Level und Achievements sind danach weg.");
-    if (!ok) return;
-    clearSave();
-    state = freshState();
-    currentKey = null;
-    rolloverDay();
-    applyTheme();
-    applySound();
-    renderAll();
-    toast({ icon: "🧹", title: "Zurückgesetzt", body: "Frischer Start — viel Spaß beim Sammeln." });
+    play("click");
+    openModal(resetProgress);
   });
 
   document.addEventListener("keydown", e => {
     const typing = /^(INPUT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable;
     if (typing) return;
+    if (!document.getElementById("modal")?.hidden) return;  // Dialog hat Vorrang
 
     if (e.code === "Space" || e.key === "Enter") {
       e.preventDefault();
