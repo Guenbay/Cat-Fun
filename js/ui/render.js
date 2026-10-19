@@ -13,7 +13,7 @@ export function setBind(name, value) {
 
 /* ---------- Kopf & Spieler ---------- */
 
-export function renderHeader(state, derived) {
+export function renderHeader(state, derived, pool) {
   setBind("streak", state.streak);
   setBind("coins", state.coins);
   setBind("level", derived.level);
@@ -24,6 +24,12 @@ export function renderHeader(state, derived) {
   setBind("combo", state.combo);
   setBind("bestCombo", state.bestCombo);
   setBind("legendary", state.facts.filter(f => f.rarity === "legendary").length);
+  setBind("langIcon", (state.lang || "de").toUpperCase());
+  setBind("poolHave", pool.have);
+  setBind("poolTotal", pool.total);
+
+  const src = $("#stage-src");
+  if (src) src.textContent = state.lang === "de" ? "· deutscher Vorrat" : "· catfact.ninja";
 
   const pct = Math.round(derived.ratio * 100);
   const bar = $("#xp-bar");
@@ -44,6 +50,12 @@ export function renderHeader(state, derived) {
 
 /* ---------- Fakten-Karte ---------- */
 
+const SOURCE_LABEL = {
+  pool:    "Vorrat DE",
+  api:     "catfact.ninja",
+  offline: "Vorrat EN (offline)",
+};
+
 export function renderFact(entry, { xpGained, isNew, combo }) {
   const card = $("#factcard");
   const text = $("#fact-text");
@@ -58,7 +70,7 @@ export function renderFact(entry, { xpGained, isNew, combo }) {
     pill.dataset.rarity = entry.rarity;
     pill.textContent = RARITIES[entry.rarity].label;
   }
-  if (idEl) idEl.textContent = `${entry.id} · ${entry.source === "offline" ? "offline" : "catfact.ninja"}`;
+  if (idEl) idEl.textContent = `${entry.id} · ${(entry.lang || "de").toUpperCase()} · ${SOURCE_LABEL[entry.source] || entry.source}`;
   if (xpEl) {
     const parts = [`+${xpGained} XP`];
     if (combo > 1) parts.push(`${combo}× Combo`);
@@ -155,12 +167,14 @@ export function renderCollection(facts, filter, onToggleFavorite) {
     li.innerHTML = `
       <div class="card__top">
         <span class="card__rarity"></span>
+        <span style="margin-left:auto" class="card__lang"></span>
         <button class="card__fav" type="button" aria-pressed="${Boolean(f.favorite)}" title="Als Favorit markieren">⭐</button>
       </div>
       <p class="card__text"></p>
       <span class="card__meta"></span>`;
 
     li.querySelector(".card__rarity").textContent = RARITIES[f.rarity].label;
+    li.querySelector(".card__lang").textContent = (f.lang || "de").toUpperCase();
     li.querySelector(".card__text").textContent = f.text;
     li.querySelector(".card__meta").textContent = `${f.id} · ${f.seen}× gezogen`;
     li.querySelector(".card__fav").addEventListener("click", () => onToggleFavorite(f.key));

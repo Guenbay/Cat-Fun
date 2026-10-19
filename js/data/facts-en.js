@@ -1,0 +1,38 @@
+/**
+ * English offline reserve. Only used in EN mode when catfact.ninja
+ * cannot be reached — the API is the primary source there.
+ */
+export const FACTS_EN = [
+  "Cats sleep for around 70 percent of their lives, about 13 to 16 hours a day.",
+  "A group of cats is called a clowder; a group of kittens is a kindle.",
+  "Cats have 32 muscles in each ear and can rotate them 180 degrees.",
+  "A cat's nose print is as unique as a human fingerprint.",
+  "Adult cats meow almost exclusively at humans, rarely at each other.",
+  "A house cat can sprint at up to 30 miles per hour over short distances.",
+  "Cats cannot taste sweetness — they lack the receptor for it.",
+  "Purring usually falls between 25 and 150 hertz, a range that can promote bone healing.",
+  "Cats have 230 bones; humans have only 206.",
+  "Cats walk like camels and giraffes: both right legs first, then both left.",
+  "A cat can jump roughly six times its own body length.",
+  "Cats need only one sixth of the light a human does to see well.",
+  "A cat's whiskers are about as wide as its body and work as a measuring tape.",
+  "Cats sweat only through their paw pads.",
+  "The oldest known domestic cat lived to 38 years.",
+  "Cats spend up to a third of their waking hours grooming.",
+  "The feline eye has a tapetum lucidum that reflects light — hence the glow in the dark.",
+  "Kittens open their eyes only seven to ten days after birth.",
+  "Cats hear ultrasound, picking up frequencies as high as 64 kilohertz.",
+  "A cat's tongue is covered in papillae, tiny backward-facing hooks made of keratin.",
+  "Cats almost always land on their feet thanks to their righting reflex.",
+  "A cat can squeeze through any opening its head fits through.",
+  "In ancient Egypt, mourners shaved their eyebrows when a cat died.",
+  "Cats have an extra scent organ on the roof of the mouth, the Jacobson's organ.",
+  "A cat's tail holds nearly ten percent of all its bones.",
+  "Cats have five toes in front and four in back.",
+  "Almost all calico cats are female; male ones are rare and usually sterile.",
+  "Siamese cats are temperature-coloured: cooler parts of the body grow darker fur.",
+  "About a third of cats do not respond to catnip at all — the trait is inherited.",
+  "Félicette became the first and only cat in space in 1963.",
+  "A cat's heart beats 140 to 220 times a minute, roughly twice as fast as a human's.",
+  "Cats lap liquid about four times a second, pulling up a column of fluid with the tongue tip.",
+];

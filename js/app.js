@@ -2,7 +2,8 @@
    Purrdex — Orchestrierung: State, Spielregeln, Ereignisse
    ============================================================ */
 
-import { fetchFact } from "./core/api.js";
+import { fetchFact, poolSize } from "./core/api.js";
+import { FACTS_DE } from "./data/facts-de.js";
 import { loadSave, persist, clearSave } from "./core/storage.js";
 import { rarityOf, cardId, RARITIES, hashText } from "./core/rarity.js";
 import { play, setSoundEnabled, isSoundEnabled } from "./core/audio.js";
@@ -37,6 +38,7 @@ function freshState() {
     questClaimed: [],
     questDaysCleared: 0,
     sound: true,
+    lang: "de",
     theme: "midnight",
     flags: {},
   };
@@ -207,7 +209,8 @@ async function drawFact() {
   try {
     rolloverDay();
 
-    const { text, source } = await fetchFact();
+    const known = new Set(state.facts.filter(f => (f.lang || "de") === state.lang).map(f => f.text));
+    const { text, source, exhausted } = await fetchFact(state.lang, known);
     const key = String(hashText(text));
     const rarity = rarityOf(text);
 
@@ -215,7 +218,7 @@ async function drawFact() {
     const isNew = !entry;
 
     if (isNew) {
-      entry = { key, id: cardId(text), text, rarity, favorite: false, seen: 0, source };
+      entry = { key, id: cardId(text), text, rarity, favorite: false, seen: 0, source, lang: state.lang };
       state.facts.push(entry);
       state.questProgress.newCards += 1;
       if (rarity === "rare" || rarity === "epic" || rarity === "legendary") state.questProgress.rarePlus += 1;
@@ -251,7 +254,15 @@ async function drawFact() {
     }
     if (source === "offline" && !state.flags.offlineNoticed) {
       state.flags.offlineNoticed = true;
-      toast({ icon: "📴", title: "Offline-Modus", body: "catfact.ninja nicht erreichbar — der eingebaute Vorrat springt ein." });
+      toast({ icon: "📴", title: "Offline-Modus", body: "catfact.ninja nicht erreichbar — der englische Vorrat springt ein." });
+    }
+    if (exhausted && state.lang === "de" && !state.flags.poolCompleteDE) {
+      state.flags.poolCompleteDE = true;
+      toast({
+        icon: "🏅", gold: true,
+        title: "Deutscher Pool komplett",
+        body: `Alle ${poolSize("de")} deutschen Fakten gesammelt. Schalt auf EN für unbegrenzten Nachschub.`,
+      });
     }
 
     checkQuests();
@@ -316,9 +327,14 @@ function applySound() {
 
 /* ---------- Rendern & Speichern ---------- */
 
+function poolProgress() {
+  const have = new Set(FACTS_DE.filter(t => state.facts.some(f => f.text === t))).size;
+  return { have, total: poolSize("de") };
+}
+
 function renderAll() {
   const d = derived();
-  view.renderHeader(state, d);
+  view.renderHeader(state, d, poolProgress());
   view.renderQuests(quests, state.questProgress, state.questClaimed);
   view.renderAchievements(state.unlocked);
   view.renderCollection(state.facts, filter, toggleFavorite);
@@ -377,9 +393,11 @@ function resetProgress() {
   clearSave();
   const keepTheme = state.theme;
   const keepSound = state.sound;
+  const keepLang = state.lang;
   state = freshState();
   state.theme = keepTheme;
   state.sound = keepSound;
+  state.lang = keepLang;
   currentKey = null;
 
   rolloverDay();
@@ -419,6 +437,20 @@ function wireEvents() {
     applySound();
     if (state.sound) play("click");
     save();
+  });
+
+  document.getElementById("btn-lang")?.addEventListener("click", () => {
+    state.lang = state.lang === "de" ? "en" : "de";
+    play("click");
+    renderAll();
+    save();
+    toast({
+      icon: state.lang === "de" ? "🇩🇪" : "🇬🇧",
+      title: state.lang === "de" ? "Deutsche Fakten" : "English facts",
+      body: state.lang === "de"
+        ? `Eingebauter Vorrat mit ${poolSize("de")} Fakten.`
+        : "Facts come from catfact.ninja — unlimited supply.",
+    });
   });
 
   document.getElementById("btn-theme")?.addEventListener("click", () => {

@@ -51,6 +51,9 @@
       <span class="chip__value" data-bind="coins">0</span>
       <span class="chip__label">Fischli</span>
     </div>
+    <button class="icon-btn icon-btn--wide" id="btn-lang" type="button" title="Sprache der Fakten umschalten">
+      <span data-bind="langIcon">DE</span>
+    </button>
     <button class="icon-btn" id="btn-sound" type="button" aria-pressed="true" title="Sound an/aus">
       <span data-bind="soundIcon">🔊</span>
     </button>
@@ -92,13 +95,17 @@
       <div class="kpi"><dt>Combo</dt><dd><span data-bind="combo">0</span>×</dd></div>
       <div class="kpi"><dt>Beste Combo</dt><dd data-bind="bestCombo">0</dd></div>
       <div class="kpi"><dt>Legendär</dt><dd data-bind="legendary">0</dd></div>
+      <div class="kpi kpi--wide">
+        <dt>Deutscher Pool</dt>
+        <dd><span data-bind="poolHave">0</span> <small>/ <span data-bind="poolTotal">0</span></small></dd>
+      </div>
     </dl>
   </section>
 
   <!-- ───────────────── Fakten-Bühne ───────────────── -->
   <section class="panel panel--stage" aria-labelledby="stage-title">
     <div class="stage__head">
-      <h2 id="stage-title">Fakt des Moments</h2>
+      <h2 id="stage-title">Fakt des Moments <small class="stage__src" id="stage-src"></small></h2>
       <span class="pill" id="rarity-pill" data-rarity="common">Common</span>
     </div>
 

@@ -178,6 +178,12 @@ a { color: var(--accent-2); }
 .icon-btn:hover { transform: translateY(-2px); background: var(--surface-2); }
 .icon-btn:active { transform: scale(.92); }
 
+.icon-btn--wide {
+  width: auto; padding: 0 15px; border-radius: 999px;
+  font-family: "JetBrains Mono", monospace; font-size: .76rem;
+  font-weight: 700; letter-spacing: .08em;
+}
+
 /* ---------- Layout ---------- */
 .layout {
   max-width: 1280px;
@@ -263,9 +269,24 @@ a { color: var(--accent-2); }
 }
 .kpi dt { font-size: .68rem; text-transform: uppercase; letter-spacing: .14em; color: var(--text-faint); }
 .kpi dd { margin: 2px 0 0; font-size: 1.35rem; font-weight: 800; font-family: "JetBrains Mono", monospace; }
+.kpi dd small { font-size: .82rem; font-weight: 500; color: var(--text-faint); }
+.kpi--wide { grid-column: span 2; }
 
 /* ---------- Bühne ---------- */
 .stage__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+
+.stage__src {
+  margin-left: 6px; font-size: .72rem; font-weight: 500;
+  color: var(--text-faint); font-family: "JetBrains Mono", monospace;
+}
+
+/* Sprach-Abzeichen auf den Sammelkarten */
+.card__lang {
+  padding: 2px 7px; border-radius: 999px;
+  border: 1px solid var(--stroke); color: var(--text-faint);
+  font-family: "JetBrains Mono", monospace; font-size: .6rem;
+  font-weight: 700; letter-spacing: .08em;
+}
 
 .pill {
   padding: 5px 13px; border-radius: 999px;
